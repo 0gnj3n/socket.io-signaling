@@ -20,47 +20,51 @@ namespace Socket.IO.Chat
         public MainPage()
         {
             this.InitializeComponent();
-			this.Loaded += MainPage_Loaded;
+            this.Loaded += MainPage_Loaded;
         }
 
-		private void MainPage_Loaded(object sender, RoutedEventArgs e)
-		{
-            //Init1().Wait(); //your sample from repository inserted more or less into an UWP project
-            Init2().Wait(); //very simple attempt to connect to localhost:3000
-		}
-
-		private async Task Init2()
-		{
-			client = new SocketIO("http://localhost:3000");
-			client.On("chat message", response =>
-			{
-				string text = response.GetValue<string>();
-			});
-			client.On("connection", response =>
-			{
-				string text = response.GetValue<string>();
-			});
-			client.OnConnected += async (s, ev) =>
-			{
-				await client.EmitAsync("chat message", ".net core");
-			};
-			try
-			{
-				await client.ConnectAsync();
-			}
-			catch (Exception ex)
-			{
-				string h = ex.ToString();
-			}
-		}
-
-		private void Button_Click(object sender, RoutedEventArgs e)
+        private async void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
-            client.EmitAsync("chat message", ".net core");
+            //Init1().Wait(); //your sample from repository inserted more or less into an UWP project
+            await Init2(); //very simple attempt to connect to localhost:3000
+        }
+
+        private async Task Init2()
+        {
+            client = new SocketIO("http://localhost:3000", new SocketIOOptions
+            {
+                EIO = 4,
+                ConnectionTimeout = TimeSpan.FromSeconds(5)
+            });
+            client.On("chat message", response =>
+            {
+                string text = response.GetValue<string>();
+            });
+            client.On("connection", response =>
+            {
+                string text = response.GetValue<string>();
+            });
+            client.OnConnected += async (s, ev) =>
+            {
+                await client.EmitAsync("chat message", ".net core");
+            };
+            try
+            {
+                await client.ConnectAsync();
+            }
+            catch (Exception ex)
+            {
+                string h = ex.ToString();
+            }
+        }
+
+        private async void Button_Click(object sender, RoutedEventArgs e)
+        {
+            await client.EmitAsync("chat message", ".net core");
         }
 
         private async Task Init1()
-		{
+        {
             //var client = new SocketIO(endpointUrl);
             //client.OnConnected += async (s, ev) =>
             //{
